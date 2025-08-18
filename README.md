@@ -1,5 +1,9 @@
 # pnd_adam_u_deploy
 
+## adam_u 类型选择
+
+Change the variable `adam_type` in the file `src/RobotControl/public_parameter.cpp` to select whether to include the hand module
+
 ## Compilation
 
 ```shell
@@ -24,6 +28,7 @@ sudo ./run.sh
 ### 1. Subscribe to `/joint_cmd` (Command Data)
 
 **Message Field Specifications**  
+
 | Field | Dimensions | Description |
 |-------------|------------|----------------------|
 | `q_d` | 25 | Desired joint positions |
@@ -34,6 +39,7 @@ sudo ./run.sh
 ### 2. Subscribe to `/robot_state` (Actual State)
 
 **Message Field Specifications**  
+
 | Field | Dimensions | Description |
 |-------------|------------|----------------------|
 | `q_a` | 25 | Actual joint positions |
@@ -78,6 +84,7 @@ sudo ./run.sh
 | 6-11        | Right Hand         |
 
 **Per-Finger Joint Mapping**  
+
 | Index | Finger Part |
 |-------|---------------------------|
 | 1 | Pinky |

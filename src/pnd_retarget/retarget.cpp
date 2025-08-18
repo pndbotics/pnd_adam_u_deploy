@@ -97,7 +97,7 @@ std::string StateRetargetImpl::get_data() {
 
 void StateRetargetImpl::set_adam_type(int type) {
   adam_type_ = type;
-  if (adam_type_ == ADAM_TYPE::Adam_U) {
+  if (adam_type_ == ADAM_TYPE::Adam_U || adam_type == ADAM_TYPE::Adam_U_handless) {
     std::cout << "adam type: AdamLite" << std::endl;
     joint_name_ = std::vector<std::string>{"dof_pos/waistRoll",
                                            "dof_pos/waistPitch",

@@ -38,3 +38,9 @@
 
 # debug information files
 *.dwo
+
+
+/build
+/install
+/log
+/logs
