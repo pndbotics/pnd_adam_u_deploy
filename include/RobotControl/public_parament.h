@@ -8,7 +8,7 @@ extern int adam_type;
 extern int adam_upper_dof_num;
 extern int adam_upper_actor_num;
 
-enum ADAM_TYPE { Adam_U = 0};
+enum ADAM_TYPE { Adam_U = 0, Adam_U_handless = 1};
 
 
 typedef enum PndAlgorithmStatusCode {

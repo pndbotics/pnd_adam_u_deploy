@@ -26,8 +26,10 @@ void robot_state_callback(const pndrobotros2::msg::RobotState::SharedPtr msg,
     robot_data.q_dot_a_[i] = msg->q_dot_a[i];
     robot_data.tau_a_[i] = msg->tau_a[i];
   }
-  for (int i = 0; i < 12; i++) {
-    robot_data.q_a_hands[i] = msg->hands_a[i];
+  if (adam_type == ADAM_TYPE::Adam_U) {
+    for (int i = 0; i < 12; i++) {
+      robot_data.q_a_hands[i] = msg->hands_a[i];
+    }
   }
   if (robot_data.get_actual_robot_state_flag) {
     robot_data.get_actual_robot_state_flag = false;
@@ -36,8 +38,10 @@ void robot_state_callback(const pndrobotros2::msg::RobotState::SharedPtr msg,
       robot_data.q_dot_d_[i] = robot_data.q_dot_a_[i];
       robot_data.tau_d_[i] = robot_data.tau_a_[i];
     }
-    for (int i = 0; i < 12; i++) {
-      robot_data.q_d_hands[i] = robot_data.q_a_hands[i];
+    if (adam_type == ADAM_TYPE::Adam_U) {
+      for (int i = 0; i < 12; i++) {
+        robot_data.q_d_hands[i] = robot_data.q_a_hands[i];
+      }
     }
   }
 }
@@ -127,7 +131,9 @@ int main(int argc, char **argv) {
   joint_cmd.q_d.resize(25);
   joint_cmd.q_dot_d.resize(25);
   joint_cmd.tau_d.resize(25);
-  joint_cmd.hands_d.resize(12);
+  if (adam_type == ADAM_TYPE::Adam_U) {
+    joint_cmd.hands_d.resize(12);
+  }
 
   // 400Hz(2.5ms)
   auto timer = node->create_wall_timer(std::chrono::microseconds(2500), [&]() {
@@ -137,8 +143,10 @@ int main(int argc, char **argv) {
       joint_cmd.q_dot_d[i] = 0;
       joint_cmd.tau_d[i] = 0;
     }
-    for (int i = 0; i < 12; i++) {
-      joint_cmd.hands_d[i] = robot_data.q_d_hands[i];
+    if (adam_type == ADAM_TYPE::Adam_U) {
+      for (int i = 0; i < 12; i++) {
+        joint_cmd.hands_d[i] = robot_data.q_d_hands[i];
+      }
     }
     publisher->publish(joint_cmd);
     /* USER CODE END 0 */

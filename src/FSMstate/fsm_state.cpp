@@ -307,6 +307,14 @@ void StateTeleoperation::retarget_motion_play() {
         robot_data_->q_d_hands
             << fileAllData[mocap_motion_line_num].segment(12, 6),
             fileAllData[mocap_motion_line_num].segment(25, 6);
+      } else if (adam_type == ADAM_TYPE::Adam_U_handless) {
+        // get current joint position
+        upperJointsCmd = robot_data_->q_a_.tail(adam_upper_actor_num);
+        // set target joint position
+        upperJointsRefPos.head(12) =
+            fileAllData[mocap_motion_line_num].head(12);
+        upperJointsRefPos.tail(7) =
+            fileAllData[mocap_motion_line_num].segment(18, 7);
       } else {
         std::cout << "open motion file failed!!!" << std::endl;
         mocap_file_ok = false;
@@ -344,6 +352,12 @@ void StateTeleoperation::retarget_motion_play() {
             robot_data_->q_d_hands
                 << fileAllData[mocap_motion_line_num].segment(12, 6),
                 fileAllData[mocap_motion_line_num].segment(25, 6);
+          } else if (adam_type == ADAM_TYPE::Adam_U_handless) {
+            // set target joint position
+            upperJointsRefPos.head(12) =
+                fileAllData[mocap_motion_line_num].head(12);
+            upperJointsRefPos.tail(7) =
+                fileAllData[mocap_motion_line_num].segment(18, 7);
           } else {
             std::cout << "error adam type" << std::endl;
             return;
