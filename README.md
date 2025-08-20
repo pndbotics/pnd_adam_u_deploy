@@ -1,8 +1,16 @@
 # pnd_adam_u_deploy
 
-## adam_u 类型选择
+## Configure ADAM-U type (With Hands/Without Hands)
 
-Change the variable `adam_type` in the file `src/RobotControl/public_parameter.cpp` to select whether to include the hand module
+> Change the variable `adam_type` in the file `src/RobotControl/public_parameter.cpp` to select whether to include the hand module
+
+```cpp
+// Adam_U with hands
+int adam_type = ADAM_TYPE::Adam_U;
+
+// Adam_U with no hands
+// int adam_type = ADAM_TYPE::Adam_U_handless;
+```
 
 ## Compilation
 
@@ -27,25 +35,25 @@ sudo ./run.sh
 
 ### 1. Subscribe to `/joint_cmd` (Command Data)
 
-**Message Field Specifications**  
+**Message Field Specifications**
 
-| Field | Dimensions | Description |
-|-------------|------------|----------------------|
-| `q_d` | 25 | Desired joint positions |
-| `q_dot_d` | 25 | Desired joint velocities |
-| `tau_d` | 25 | Desired joint torques |
-| `hands_d` | 12 | Desired hand positions |
+| Field     | Dimensions | Description              |
+| --------- | ---------- | ------------------------ |
+| `q_d`     | 25         | Desired joint positions  |
+| `q_dot_d` | 25         | Desired joint velocities |
+| `tau_d`   | 25         | Desired joint torques    |
+| `hands_d` | 12         | Desired hand positions   |
 
 ### 2. Subscribe to `/robot_state` (Actual State)
 
-**Message Field Specifications**  
+**Message Field Specifications**
 
-| Field | Dimensions | Description |
-|-------------|------------|----------------------|
-| `q_a` | 25 | Actual joint positions |
-| `q_dot_a` | 25 | Actual joint velocities |
-| `tau_a` | 25 | Actual joint torques |
-| `hands_a` | 12 | Actual hand positions |
+| Field     | Dimensions | Description             |
+| --------- | ---------- | ----------------------- |
+| `q_a`     | 25         | Actual joint positions  |
+| `q_dot_a` | 25         | Actual joint velocities |
+| `tau_a`   | 25         | Actual joint torques    |
+| `hands_a` | 12         | Actual hand positions   |
 
 ---
 
@@ -83,13 +91,13 @@ sudo ./run.sh
 | 0-5         | Left Hand          |
 | 6-11        | Right Hand         |
 
-**Per-Finger Joint Mapping**  
+**Per-Finger Joint Mapping**
 
-| Index | Finger Part |
-|-------|---------------------------|
-| 1 | Pinky |
-| 2 | Ring Finger |
-| 3 | Middle Finger |
-| 4 | Index Finger |
-| 5 | Thumb |
-| 6 | Thumb Lateral Movement |
+| Index | Finger Part            |
+| ----- | ---------------------- |
+| 1     | Pinky                  |
+| 2     | Ring Finger            |
+| 3     | Middle Finger          |
+| 4     | Index Finger           |
+| 5     | Thumb                  |
+| 6     | Thumb Lateral Movement |

@@ -8,8 +8,7 @@ extern int adam_type;
 extern int adam_upper_dof_num;
 extern int adam_upper_actor_num;
 
-enum ADAM_TYPE { Adam_U = 0, Adam_U_handless = 1};
-
+enum ADAM_TYPE { Adam_U = 0, Adam_U_handless = 1 };
 
 typedef enum PndAlgorithmStatusCode {
   PndAlgorithmSuccess = 0,
@@ -46,9 +45,7 @@ struct RobotData {
   // retarget data
   Eigen::VectorXd retarget_dataL = Eigen::VectorXd::Zero(31);
 
-
   bool get_actual_robot_state_flag = true;
-
 
   bool retarget_play_flag = false;
   bool retarget_play_flag_continue = false;
@@ -57,7 +54,6 @@ struct RobotData {
   std::string motionPath;
 
   bool retarget_record = false;
-
 };
 
 #endif
