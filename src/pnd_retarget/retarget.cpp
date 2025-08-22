@@ -112,7 +112,7 @@ std::string StateRetargetImpl::get_data() {
   for (size_t i = 0; i < dof_pass_num_; ++i) {
     mpc_dofs_pos_[i] = d[i];
   }
-  if (adam_type_ == ADAM_TYPE::Adam_U) {
+  if (adam_type_ == ADAM_TYPE::Adam_U || adam_type_ == ADAM_TYPE::Adam_U_handless) {
     if (joint_state_subscriber_->is_linear_actuator()) {
       int linear_actuator_idx = d.size() - pnd_hand_names_.size();
       for (size_t i = dof_pass_num_; i < mpc_dofs_pos_.size(); ++i) {
@@ -129,7 +129,7 @@ std::string StateRetargetImpl::get_data() {
 
 void StateRetargetImpl::set_adam_type(int type) {
   adam_type_ = type;
-  if (adam_type_ == ADAM_TYPE::Adam_U) {
+  if (adam_type_ == ADAM_TYPE::Adam_U || adam_type_ == ADAM_TYPE::Adam_U_handless) {
     std::cout << "adam type: AdamLite" << std::endl;
     joint_name_ = std::vector<std::string>{"dof_pos/waistRoll",
                                            "dof_pos/waistPitch",
