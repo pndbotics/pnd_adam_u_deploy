@@ -16,6 +16,12 @@
 
 using std::placeholders::_1;
 
+std::vector<std::string> pnd_hand_names_{
+    "dof_pos/hand_pinky_Left",  "dof_pos/hand_ring_Left",     "dof_pos/hand_middle_Left",
+    "dof_pos/hand_index_Left",  "dof_pos/hand_thumb_1_Left",  "dof_pos/hand_thumb_2_Left",
+    "dof_pos/hand_pinky_Right", "dof_pos/hand_ring_Right",    "dof_pos/hand_middle_Right",
+    "dof_pos/hand_index_Right", "dof_pos/hand_thumb_1_Right", "dof_pos/hand_thumb_2_Right"};
+
 class JointStateSubscriber : public rclcpp::Node {
 public:
   JointStateSubscriber(const std::vector<std::string> &joint_names,
@@ -23,6 +29,15 @@ public:
       : Node("adam_joint_state_subscriber", options) { // 添加options参数
     joint_position_.resize(joint_names.size(), 0);
     std::cout << "joint_names size: " << joint_names.size() << std::endl;
+
+    for (const auto& hand_name : pnd_hand_names_) {
+      auto it = std::find(joint_names.begin(), joint_names.end(), hand_name);
+      if (it != joint_names.end()) {
+        int hand_pos = std::distance(joint_names.begin(), it);
+        joint_position_[hand_pos] = std::numeric_limits<double>::quiet_NaN();
+      }
+    }
+
     for (size_t i = 0; i < joint_names.size(); ++i) {
       joint_idx_.insert(std::make_pair(joint_names[i], i));
     }
@@ -37,6 +52,16 @@ public:
   }
   void cancelSubscribe() { subscription_.reset(); }
   const std::vector<double> &get_data() const { return joint_position_; }
+  const bool is_linear_actuator() {
+    for (const std::string& hand_name : pnd_hand_names_) {
+      if (joint_idx_.find(hand_name) != joint_idx_.end()) {
+        if (!std::isnan(joint_position_[joint_idx_[hand_name]])) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 
 private:
   void topic_callback(const sensor_msgs::msg::JointState::SharedPtr msg) {
@@ -88,7 +113,14 @@ std::string StateRetargetImpl::get_data() {
     mpc_dofs_pos_[i] = d[i];
   }
   if (adam_type_ == ADAM_TYPE::Adam_U) {
-    handle_inspire(d);
+    if (joint_state_subscriber_->is_linear_actuator()) {
+      int linear_actuator_idx = d.size() - pnd_hand_names_.size();
+      for (size_t i = dof_pass_num_; i < mpc_dofs_pos_.size(); ++i) {
+        mpc_dofs_pos_[i] = d[linear_actuator_idx + i - dof_pass_num_];
+      }
+    } else {
+      handle_inspire(d);
+    }
   }
   nlohmann::json j;
   j["data"] = mpc_dofs_pos_;
@@ -97,7 +129,7 @@ std::string StateRetargetImpl::get_data() {
 
 void StateRetargetImpl::set_adam_type(int type) {
   adam_type_ = type;
-  if (adam_type_ == ADAM_TYPE::Adam_U || adam_type == ADAM_TYPE::Adam_U_handless) {
+  if (adam_type_ == ADAM_TYPE::Adam_U) {
     std::cout << "adam type: AdamLite" << std::endl;
     joint_name_ = std::vector<std::string>{"dof_pos/waistRoll",
                                            "dof_pos/waistPitch",
@@ -144,6 +176,7 @@ void StateRetargetImpl::set_adam_type(int type) {
                                            "dof_pos/R_thumb_proximal",
                                            "dof_pos/R_thumb_PIP_joint",
                                            "dof_pos/R_thumb_MCP_joint1"};
+    joint_name_.insert(joint_name_.end(), pnd_hand_names_.begin(), pnd_hand_names_.end());
     mpc_dofs_pos_.resize(31, 0);
     dof_pass_num_ = 19;
   } else {
