@@ -130,6 +130,7 @@ void StateTeleoperation::retarget_teleoperation() {
       Eigen::VectorXd upperJointsRefVel =
           Eigen::VectorXd::Zero(adam_upper_actor_num);
       auto data = getPndRetarget()->get_data();
+      getPndRetarget()->publisher(robot_data_->q_a_.tail(adam_upper_actor_num), robot_data_->q_d_hands);
       try {
         auto data_j = nlohmann::json::parse(data);
 

@@ -92,6 +92,28 @@ private:
   std::map<std::string, int> joint_idx_;
 };
 
+class JointStatePublisher : public rclcpp::Node {
+ public:
+  JointStatePublisher(const std::vector<std::string>& joint_names) : Node("adam_joint_state_publisher") {
+    // 使用更可靠的QoS设置
+    auto qos = rclcpp::QoS(10).reliable().durability_volatile();
+    publisher_ = this->create_publisher<sensor_msgs::msg::JointState>("robot_states", qos);
+  }
+
+  void publish(const sensor_msgs::msg::JointState& msg) {
+    try {
+      publisher_->publish(msg);
+    } catch (const std::exception& e) {
+      RCLCPP_ERROR(this->get_logger(), "Failed to publish message: %s", e.what());
+    }
+  }
+
+  void cancelPublisher() { publisher_.reset(); }
+
+ private:
+  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr publisher_;
+};
+
 StateRetargetImpl::StateRetargetImpl() {
   // setenv("LD_LIBRARY_PATH",
   //        "/opt/ros/humble/opt/yaml_cpp_vendor/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/"
@@ -233,6 +255,23 @@ void StateRetargetImpl::cancelSubscribe() {
   joint_state_subscriber_->cancelSubscribe();
 }
 
+void StateRetargetImpl::publisher(Eigen::VectorXd actuator_joint, Eigen::VectorXd hand_joint) {
+  upper_joint_position.resize(31);
+  for (int i == 0; i < 19; i++) {
+    upper_joint_position[i] = actuator_joint(i);
+  }
+  if (adam_type_ == ADAM_TYPE::Adam_U) {
+    for (int i == 19; i < 31; i++) {
+      upper_joint_position[i] = hand_joint(i - 19);
+    }
+  }
+}
+
+void StateRetargetImpl::cancelPublisher() {
+  std::cout << "ros2 cancelPublisher " << std::endl;
+  joint_state_publisher_->cancelPublisher();
+}
+
 double StateRetargetImpl::convert_radian_to_range(double radian) {
   double mapped_value = 0.0;
   if (radian < 0)
@@ -299,14 +338,12 @@ void StateRetargetImpl::ros_thread() {
 
   joint_state_subscriber_ =
       std::make_shared<JointStateSubscriber>(joint_name_, options);
-
-  // joint_state_subscriber_ =
-  // std::make_shared<JointStateSubscriber>(joint_name_);
   std::cout << "joint_state_subscriber_" << std::endl;
 
   rclcpp::Rate rate(200);
   while (rclcpp::ok() && !shutdown_flag) {
     rclcpp::spin_some(joint_state_subscriber_); // non-blocking
+    send_data();
     rate.sleep();
   }
   std::cout << "retarget shutdown_flag" << std::endl;
@@ -321,4 +358,33 @@ void StateRetargetImpl::exit() {
   std::cout << "set shutdown_flag true" << std::endl;
   ros_thread_->join();
   std::cout << "ros_thread exit" << std::endl;
+}
+
+void StateRetargetImpl::send_data() {
+  if (adam_type_ == ADAM_TYPE::AdamLite) {
+  } else if (adam_type_ == ADAM_TYPE::StandardPlus29 || adam_type_ == ADAM_TYPE::StandardPlus29AGX) {
+    joint_name_publisher_ = std::vector<std::string>{
+        "dof_pos/shoulderPitch_Left",  "dof_pos/shoulderRoll_Left",  "dof_pos/shoulderYaw_Left",
+        "dof_pos/elbow_Left",          "dof_pos/wristYaw_Left",      "dof_pos/wristPitch_Left",
+        "dof_pos/wristRoll_Left",
+
+        "dof_pos/shoulderPitch_Right", "dof_pos/shoulderRoll_Right", "dof_pos/shoulderYaw_Right",
+        "dof_pos/elbow_Right",         "dof_pos/wristYaw_Right",     "dof_pos/wristPitch_Right",
+        "dof_pos/wristRoll_Right",
+
+        "dof_pos/hand_pinky_Left",  "dof_pos/hand_ring_Left",     "dof_pos/hand_middle_Left",
+        "dof_pos/hand_index_Left",  "dof_pos/hand_thumb_1_Left",  "dof_pos/hand_thumb_2_Left",
+        
+        "dof_pos/hand_pinky_Right", "dof_pos/hand_ring_Right",    "dof_pos/hand_middle_Right",
+        "dof_pos/hand_index_Right", "dof_pos/hand_thumb_1_Right", "dof_pos/hand_thumb_2_Right"};
+    sensor_msgs::msg::JointState msg;
+    msg.header.stamp = rclcpp::Clock().now();
+    msg.name = joint_name_publisher_;
+    msg.position = upper_joint_position;
+    msg.velocity.resize(upper_joint_position.size(), 0);
+    msg.effort.resize(upper_joint_position.size(), 0);
+    joint_state_publisher_->publish(msg);
+  } else if (adam_type_ == ADAM_TYPE::StandardPlus29PRO) {
+  } else {
+  }
 }

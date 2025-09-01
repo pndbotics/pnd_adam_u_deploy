@@ -10,7 +10,7 @@
 #include "retarget_api.h"
 
 class JointStateSubscriber;
-
+class JointStatePublisher;
 class StateRetargetImpl : public StateRetarget {
  public:
   StateRetargetImpl();
@@ -55,6 +55,16 @@ class StateRetargetImpl : public StateRetarget {
   int dof_pass_num_ = 0;
   double tar_root_height = 0.0;
   double tar_root_height_last = 0.0;
+
+ public:
+  void send_data();
+  void publisher(Eigen::VectorXd arm_joint, Eigen::VectorXd hand_joint);
+  void cancelPublisher();
+
+ private:
+  std::shared_ptr<JointStatePublisher> joint_state_publisher_;
+  std::vector<std::string> joint_name_publisher_;
+  std::vector<double> upper_joint_position;
 };
 
 #endif  // RETARGET_ROS_H_
