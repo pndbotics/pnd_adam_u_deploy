@@ -370,19 +370,23 @@ void StateRetargetImpl::exit() {
 void StateRetargetImpl::send_data() {
   if (adam_type_ == ADAM_TYPE::Adam_U || adam_type_ == ADAM_TYPE::Adam_U_handless) {
     joint_name_publisher_ = std::vector<std::string>{
-        "dof_pos/shoulderPitch_Left",  "dof_pos/shoulderRoll_Left",  "dof_pos/shoulderYaw_Left",
-        "dof_pos/elbow_Left",          "dof_pos/wristYaw_Left",      "dof_pos/wristPitch_Left",
-        "dof_pos/wristRoll_Left",
+      "dof_pos/waistRoll", "dof_pos/waistPitch", "dof_pos/waistYaw", "dof_pos/neckYaw",
+      "dof_pos/neckPitch",
 
-        "dof_pos/shoulderPitch_Right", "dof_pos/shoulderRoll_Right", "dof_pos/shoulderYaw_Right",
-        "dof_pos/elbow_Right",         "dof_pos/wristYaw_Right",     "dof_pos/wristPitch_Right",
-        "dof_pos/wristRoll_Right",
+      "dof_pos/shoulderPitch_Left",  "dof_pos/shoulderRoll_Left",  "dof_pos/shoulderYaw_Left",
+      "dof_pos/elbow_Left",          "dof_pos/wristYaw_Left",      "dof_pos/wristPitch_Left",
+      "dof_pos/wristRoll_Left",
 
-        "dof_pos/hand_pinky_Left",  "dof_pos/hand_ring_Left",     "dof_pos/hand_middle_Left",
-        "dof_pos/hand_index_Left",  "dof_pos/hand_thumb_1_Left",  "dof_pos/hand_thumb_2_Left",
+      "dof_pos/shoulderPitch_Right", "dof_pos/shoulderRoll_Right", "dof_pos/shoulderYaw_Right",
+      "dof_pos/elbow_Right",         "dof_pos/wristYaw_Right",     "dof_pos/wristPitch_Right",
+      "dof_pos/wristRoll_Right",
+
+      "dof_pos/hand_pinky_Left",  "dof_pos/hand_ring_Left",     "dof_pos/hand_middle_Left",
+      "dof_pos/hand_index_Left",  "dof_pos/hand_thumb_1_Left",  "dof_pos/hand_thumb_2_Left",
         
-        "dof_pos/hand_pinky_Right", "dof_pos/hand_ring_Right",    "dof_pos/hand_middle_Right",
-        "dof_pos/hand_index_Right", "dof_pos/hand_thumb_1_Right", "dof_pos/hand_thumb_2_Right"};
+      "dof_pos/hand_pinky_Right", "dof_pos/hand_ring_Right",    "dof_pos/hand_middle_Right",
+      "dof_pos/hand_index_Right", "dof_pos/hand_thumb_1_Right", "dof_pos/hand_thumb_2_Right"
+    };
     sensor_msgs::msg::JointState msg;
     msg.header.stamp = rclcpp::Clock().now();
     msg.name = joint_name_publisher_;
