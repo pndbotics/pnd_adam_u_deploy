@@ -340,6 +340,11 @@ void StateRetargetImpl::ros_thread() {
       std::make_shared<JointStateSubscriber>(joint_name_, options);
   std::cout << "joint_state_subscriber_" << std::endl;
 
+
+  joint_state_publisher_ = 
+      std::make_shared<JointStatePublisher>(joint_name_publisher_);
+  std::cout << "joint_state_publisher_" << std::endl;
+
   rclcpp::Rate rate(200);
   while (rclcpp::ok() && !shutdown_flag) {
     rclcpp::spin_some(joint_state_subscriber_); // non-blocking
@@ -347,6 +352,8 @@ void StateRetargetImpl::ros_thread() {
     rate.sleep();
   }
   std::cout << "retarget shutdown_flag" << std::endl;
+  joint_state_subscriber_.reset();
+  joint_state_publisher_.reset();
 
   rclcpp::shutdown();
   std::cout << "rclcpp shutdown" << std::endl;
