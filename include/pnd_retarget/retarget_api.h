@@ -1,6 +1,7 @@
 #ifndef RETARGET_API_H_
 #define RETARGET_API_H_
 
+#include <Eigen/Dense>
 #include <string>
 
 class StateRetarget {
@@ -31,6 +32,8 @@ class StateRetarget {
 
   virtual void subscribe() = 0;
   virtual void cancelSubscribe() = 0;
+  virtual void publisher(Eigen::VectorXd arm_joint, Eigen::VectorXd hand_joint) = 0;
+  virtual void cancelPublisher() = 0;
   virtual void exit() = 0;
 };
 

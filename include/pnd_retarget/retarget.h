@@ -58,7 +58,7 @@ class StateRetargetImpl : public StateRetarget {
 
  public:
   void send_data();
-  void publisher(Eigen::VectorXd arm_joint, Eigen::VectorXd hand_joint);
+  void publisher(Eigen::VectorXd actuator_joint, Eigen::VectorXd hand_joint);
   void cancelPublisher();
 
  private:

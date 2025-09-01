@@ -257,11 +257,11 @@ void StateRetargetImpl::cancelSubscribe() {
 
 void StateRetargetImpl::publisher(Eigen::VectorXd actuator_joint, Eigen::VectorXd hand_joint) {
   upper_joint_position.resize(31);
-  for (int i == 0; i < 19; i++) {
+  for (int i = 0; i < 19; i++) {
     upper_joint_position[i] = actuator_joint(i);
   }
   if (adam_type_ == ADAM_TYPE::Adam_U) {
-    for (int i == 19; i < 31; i++) {
+    for (int i = 19; i < 31; i++) {
       upper_joint_position[i] = hand_joint(i - 19);
     }
   }
@@ -361,8 +361,7 @@ void StateRetargetImpl::exit() {
 }
 
 void StateRetargetImpl::send_data() {
-  if (adam_type_ == ADAM_TYPE::AdamLite) {
-  } else if (adam_type_ == ADAM_TYPE::StandardPlus29 || adam_type_ == ADAM_TYPE::StandardPlus29AGX) {
+  if (adam_type_ == ADAM_TYPE::Adam_U || adam_type_ == ADAM_TYPE::Adam_U_handless) {
     joint_name_publisher_ = std::vector<std::string>{
         "dof_pos/shoulderPitch_Left",  "dof_pos/shoulderRoll_Left",  "dof_pos/shoulderYaw_Left",
         "dof_pos/elbow_Left",          "dof_pos/wristYaw_Left",      "dof_pos/wristPitch_Left",
@@ -384,7 +383,5 @@ void StateRetargetImpl::send_data() {
     msg.velocity.resize(upper_joint_position.size(), 0);
     msg.effort.resize(upper_joint_position.size(), 0);
     joint_state_publisher_->publish(msg);
-  } else if (adam_type_ == ADAM_TYPE::StandardPlus29PRO) {
-  } else {
   }
 }
