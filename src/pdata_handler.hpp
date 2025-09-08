@@ -90,22 +90,23 @@ public:
     robot_data.retarget_dataL.segment(25, 6) = robot_data.q_d_hands.tail(6);
   }
 
-  void retraget_record_writeData(const RobotData &robot_data) {
+  void retraget_record_writeData(const RobotData& robot_data) {
     static int count = 0;
+    static bool file_format_fix = false;
 
     if (robot_data.retarget_record && rewrite_flag_) {
       init_retarget_record();
       rewrite_flag_ = false;
       count = 0;
-      std::cout << "\033[1;32m" << "rewrite retarget log" << "\033[0m"
-                << std::endl;
+      std::cout << "\033[1;32m" << "rewrite retarget log" << "\033[0m" << std::endl;
     }
-
+    
     std::ostringstream oss_retaregt_record_;
-    if (robot_data.retarget_record) {
+    if(robot_data.retarget_record) {
+      file_format_fix = true;
       count++;
-      if (count % 6 == 0) {
-        for (const auto &elem : robot_data.retarget_dataL) {
+      if(count % 6 == 0) {
+        for (const auto& elem : robot_data.retarget_dataL) {
           oss_retaregt_record_ << elem << " ";
         }
         logger_retaregt_record->info(oss_retaregt_record_.str());
@@ -113,7 +114,36 @@ public:
       }
     } else {
       rewrite_flag_ = true;
+      if (file_format_fix) {
+        trim_retarget_log();
+        file_format_fix = false;
+      }
     }
+  }
+private:
+  void trim_retarget_log() {
+    std::string log_path = "/home/pnd-humanoid/Documents/adam_u_demo/src/cpp_demo/resource/retarget_record.txt";
+    std::ifstream in(log_path);
+    std::vector<std::string> lines;
+    std::string line;
+
+    while (std::getline(in, line)) {
+      lines.push_back(line);
+    }
+    in.close();
+
+    if (!lines.empty()) {
+      lines.erase(lines.begin());
+      if (!lines.empty()) {
+        lines.pop_back();
+      }
+    }
+
+    std::ofstream out(log_path, std::ios::trunc);
+    for (const auto& l : lines) {
+      out << l << '\n';
+    }
+    out.close();
   }
 
 private:

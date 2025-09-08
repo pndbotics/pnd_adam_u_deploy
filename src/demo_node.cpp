@@ -16,6 +16,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #include <yaml-cpp/yaml.h>
+#include "public_parament.h"
 using namespace YAML;
 
 void robot_state_callback(const pndrobotros2::msg::RobotState::SharedPtr msg,
@@ -52,7 +53,48 @@ void commands_callback(const std_msgs::msg::String::SharedPtr msg) {
   std::cout << "Received command: " << msg->data.c_str() << std::endl;
 }
 
+void read_config()
+{
+  std::string package_share_dir = ament_index_cpp::get_package_share_directory("pnd_adam_u_deploy");
+  std::string param_file = package_share_dir + "/config/paras.yaml";
+  try {
+    Node config = LoadFile(param_file);
+    
+    std::function<void(Node, std::string)> parse_node;
+    parse_node = [&](Node yaml_node, std::string prefix) {
+      for (const_iterator it = yaml_node.begin(); it != yaml_node.end(); ++it) {
+        std::string full_name = prefix.empty() ? it->first.as<std::string>() : prefix + "." + it->first.as<std::string>();
+        
+        if (it->second.IsMap()) {
+          parse_node(it->second, full_name);
+        } else {
+          auto param_value = it->second;
+          if(param_value.IsScalar()) {
+            try {
+              double value = param_value.as<double>();
+              std::cout << "Parameter: " << full_name << " = " << value << std::endl;
+              if(full_name == "control.adam_type"){
+                  adam_type = value;
+                  std::cout << "adam_type: " << adam_type << std::endl;
+              }
+            } catch (...) {
+            }
+          }
+        }
+      }
+    };
+    
+    parse_node(config, "");
+      
+  } catch (const YAML::Exception &e) {
+    std::cerr << "YAML parsing failed: " << e.what() << std::endl;
+    return;
+  }
+}
+
 int main(int argc, char **argv) {
+  read_config(); // read config，update paras
+  
   mlockall(MCL_CURRENT | MCL_FUTURE);
 
   struct sched_param param;
@@ -77,42 +119,6 @@ int main(int argc, char **argv) {
   rclcpp::NodeOptions options;
   options.use_intra_process_comms(true);
   auto node = std::make_shared<rclcpp::Node>("publisher_node", options);
-
-  std::string package_share_dir =
-      ament_index_cpp::get_package_share_directory("pnd_adam_u_deploy");
-  std::string param_file = package_share_dir + "/config/paras.yaml";
-  try {
-    Node config = LoadFile(param_file);
-
-    std::function<void(Node, std::string)> parse_node;
-    parse_node = [&](Node yaml_node, std::string prefix) {
-      for (const_iterator it = yaml_node.begin(); it != yaml_node.end(); ++it) {
-        std::string full_name =
-            prefix.empty() ? it->first.as<std::string>()
-                           : prefix + "." + it->first.as<std::string>();
-
-        if (it->second.IsMap()) {
-          parse_node(it->second, full_name);
-        } else {
-          auto param_value = it->second;
-          if (param_value.IsScalar()) {
-            try {
-              double value = param_value.as<double>();
-              std::cout << "Parameter: " << full_name << " = " << value
-                        << std::endl;
-            } catch (...) {
-            }
-          }
-        }
-      }
-    };
-
-    parse_node(config, "");
-
-  } catch (const YAML::Exception &e) {
-    RCLCPP_ERROR(node->get_logger(), "YAML parsing failed: %s", e.what());
-    return -1;
-  }
 
   auto publisher = node->create_publisher<pndrobotros2::msg::JointStateCmd>(
       "joint_cmd", rclcpp::QoS(10).reliable());
