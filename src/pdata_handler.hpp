@@ -10,6 +10,7 @@
 #include "../include/third_party/spdlog/sinks/stdout_color_sinks.h"
 #include "../include/third_party/spdlog/spdlog.h"
 #include <iostream>
+#include <fstream>  // 添加文件流头文件
 
 class DataHandler {
 public:
