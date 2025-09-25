@@ -1,3 +1,5 @@
+---
 # 控制参数示例
+# 0 - 有手（默认）；1 - 无手
 control:
-  adam_type: 1
+  adam_type: 0
